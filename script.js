@@ -203,6 +203,276 @@ function initScrollAnimations() {
         el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         observer.observe(el);
     });
+    
+    // Observe gallery items for animation
+    document.querySelectorAll('.gallery-item').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+}
+
+// Initialize Image Gallery
+function initImageGallery() {
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    
+    if (galleryItems.length === 0) return;
+    
+    // Create lightbox overlay
+    const lightbox = document.createElement('div');
+    lightbox.className = 'lightbox-overlay';
+    lightbox.innerHTML = `
+        <div class="lightbox-content">
+            <button class="lightbox-close">&times;</button>
+            <img class="lightbox-image" src="" alt="" />
+            <div class="lightbox-caption">
+                <h3></h3>
+                <p></p>
+            </div>
+            <button class="lightbox-prev">&lt;</button>
+            <button class="lightbox-next">&gt;</button>
+        </div>
+    `;
+    document.body.appendChild(lightbox);
+    
+    // Add lightbox styles
+    const lightboxStyles = document.createElement('style');
+    lightboxStyles.textContent = `
+        .lightbox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .lightbox-overlay.active {
+            display: flex;
+        }
+        
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            text-align: center;
+        }
+        
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .lightbox-caption {
+            color: white;
+            margin-top: 16px;
+        }
+        
+        .lightbox-caption h3 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+        }
+        
+        .lightbox-caption p {
+            margin: 0;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 32px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+        
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .lightbox-prev,
+        .lightbox-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 16px 12px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+        
+        .lightbox-prev:hover,
+        .lightbox-next:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .lightbox-prev {
+            left: -60px;
+        }
+        
+        .lightbox-next {
+            right: -60px;
+        }
+        
+        @media (max-width: 767px) {
+            .lightbox-prev,
+            .lightbox-next {
+                padding: 12px 8px;
+                font-size: 20px;
+            }
+            
+            .lightbox-prev {
+                left: -50px;
+            }
+            
+            .lightbox-next {
+                right: -50px;
+            }
+            
+            .lightbox-caption h3 {
+                font-size: 20px;
+            }
+            
+            .lightbox-caption p {
+                font-size: 14px;
+            }
+        }
+    `;
+    document.head.appendChild(lightboxStyles);
+    
+    let currentIndex = 0;
+    
+    // Open lightbox
+    function openLightbox(index) {
+        currentIndex = index;
+        const item = galleryItems[index];
+        const img = item.querySelector('.gallery-img');
+        const overlay = item.querySelector('.gallery-overlay');
+        
+        const lightboxImg = lightbox.querySelector('.lightbox-image');
+        const lightboxCaption = lightbox.querySelector('.lightbox-caption h3');
+        const lightboxDesc = lightbox.querySelector('.lightbox-caption p');
+        
+        lightboxImg.src = img.src;
+        lightboxImg.alt = img.alt;
+        lightboxCaption.textContent = overlay.querySelector('h4').textContent;
+        lightboxDesc.textContent = overlay.querySelector('p').textContent;
+        
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Close lightbox
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    // Navigate lightbox
+    function navigateLightbox(direction) {
+        if (direction === 'next') {
+            currentIndex = (currentIndex + 1) % galleryItems.length;
+        } else {
+            currentIndex = currentIndex === 0 ? galleryItems.length - 1 : currentIndex - 1;
+        }
+        openLightbox(currentIndex);
+    }
+    
+    // Event listeners
+    galleryItems.forEach((item, index) => {
+        item.addEventListener('click', () => openLightbox(index));
+        
+        // Add keyboard navigation
+        item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openLightbox(index);
+            }
+        });
+        
+        // Make gallery items focusable
+        item.setAttribute('tabindex', '0');
+        item.setAttribute('role', 'button');
+        item.setAttribute('aria-label', `View image ${index + 1}: ${item.querySelector('.gallery-overlay h4').textContent}`);
+    });
+    
+    // Lightbox controls
+    lightbox.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
+    lightbox.querySelector('.lightbox-prev').addEventListener('click', () => navigateLightbox('prev'));
+    lightbox.querySelector('.lightbox-next').addEventListener('click', () => navigateLightbox('next'));
+    
+    // Close lightbox on overlay click
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('active')) return;
+        
+        switch(e.key) {
+            case 'Escape':
+                closeLightbox();
+                break;
+            case 'ArrowLeft':
+                navigateLightbox('prev');
+                break;
+            case 'ArrowRight':
+                navigateLightbox('next');
+                break;
+        }
+    });
+    
+    // Touch gestures for mobile
+    if (isTouchDevice) {
+        let startX = 0;
+        let startY = 0;
+        
+        lightbox.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        });
+        
+        lightbox.addEventListener('touchend', (e) => {
+            if (!lightbox.classList.contains('active')) return;
+            
+            const endX = e.changedTouches[0].clientX;
+            const endY = e.changedTouches[0].clientY;
+            const diffX = startX - endX;
+            const diffY = startY - endY;
+            
+            // Horizontal swipe for navigation
+            if (Math.abs(diffX) > 50 && Math.abs(diffY) < 50) {
+                if (diffX > 0) {
+                    navigateLightbox('next');
+                } else {
+                    navigateLightbox('prev');
+                }
+            }
+        });
+    }
 }
 
 // Responsive image loading
@@ -328,6 +598,7 @@ function initAllFeatures() {
     initTouchGestures();
     initPerformanceOptimizations();
     initAccessibility();
+    initImageGallery(); // Initialize image gallery
 }
 
 // Wait for DOM to be ready
