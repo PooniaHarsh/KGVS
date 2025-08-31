@@ -314,6 +314,27 @@ section {
     margin: 6px 0 8px
 }
 
+.card h4 {
+    margin: 16px 0 8px;
+    color: var(--green);
+    font-size: 18px;
+}
+
+.card p {
+    margin: 0 0 12px;
+    line-height: 1.6;
+}
+
+.card ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.card li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
 .pill {
     display: inline-block;
     background: #eef8f1;
@@ -322,7 +343,6 @@ section {
     border-radius: 999px;
     font-size: 12px;
     margin: 4px 6px 0 0;
-    
 }
 
 .partners {
@@ -361,6 +381,66 @@ section {
     border: 1.5px solid var(--green);
     border-radius: 12px;
     font-weight: 600
+}
+
+/* Thrust Areas Section */
+#thrust ul {
+    list-style: none;
+    padding: 0;
+}
+
+#thrust li {
+    background: var(--card);
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--green);
+    font-weight: 500;
+    transition: transform 0.2s ease;
+}
+
+#thrust li:hover {
+    transform: translateY(-2px);
+}
+
+/* Awards Section */
+#awards ul {
+    list-style: none;
+    padding: 0;
+}
+
+#awards li {
+    background: var(--card);
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    border-left: 4px solid var(--yellow);
+    position: relative;
+}
+
+#awards li:before {
+    content: "🏆";
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--yellow);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+/* Partners Section */
+#partners p {
+    text-align: center;
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--muted);
 }
 
 footer {
