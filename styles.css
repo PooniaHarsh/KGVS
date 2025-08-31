@@ -1654,3 +1654,28 @@ footer {
         padding: 12px;
     }
 }
+
+/* floating home button */
+
+
+  #homeBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 55px;
+    height: 55px;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    display: none; /* hidden at first */
+    transition: all 0.3s ease;
+    z-index: 1000;
+  }
+  #homeBtn:hover {
+    background: var(--green-600);
+    transform: scale(1.1);
+  }

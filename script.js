@@ -656,3 +656,20 @@ if ('serviceWorker' in navigator) {
         // navigator.serviceWorker.register('/sw.js');
     });
 }
+
+// floating home button
+  const homeBtn = document.getElementById("homeBtn");
+
+  // Show button after scrolling 100px
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 100) {
+      homeBtn.style.display = "block";
+    } else {
+      homeBtn.style.display = "none";
+    }
+  });
+
+  // Scroll to top smoothly
+  homeBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
