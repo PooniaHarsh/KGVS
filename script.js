@@ -589,6 +589,255 @@ function initAccessibility() {
     }
 }
 
+// Initialize Contact Form
+function initContactForm() {
+    const contactForm = document.getElementById('contactForm');
+    
+    if (!contactForm) return;
+    
+    // Form validation and submission
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get form data
+        const formData = new FormData(contactForm);
+        const name = formData.get('name');
+        const email = formData.get('email');
+        const phone = formData.get('phone');
+        const subject = formData.get('subject');
+        const message = formData.get('message');
+        const newsletter = formData.get('newsletter');
+        
+        // Basic validation
+        if (!name || !email || !subject || !message) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
+        }
+        
+        if (!isValidEmail(email)) {
+            showNotification('Please enter a valid email address', 'error');
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = contactForm.querySelector('.submit-btn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span>Sending...</span><span class="btn-icon">⏳</span>';
+        submitBtn.disabled = true;
+        
+        // Simulate form submission (replace with actual API call)
+        setTimeout(() => {
+            // Success
+            showNotification('Thank you! Your message has been sent successfully. We\'ll get back to you within 24 hours.', 'success');
+            contactForm.reset();
+            
+            // Reset button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            
+            // Scroll to top of contact section
+            document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+        }, 2000);
+    });
+    
+    // Real-time validation
+    const inputs = contactForm.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            validateField(this);
+        });
+        
+        input.addEventListener('input', function() {
+            clearFieldError(this);
+        });
+    });
+    
+    // Phone number formatting
+    const phoneInput = contactForm.querySelector('#phone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.length <= 5) {
+                    value = value.replace(/(\d{5})/, '$1-');
+                } else if (value.length <= 10) {
+                    value = value.replace(/(\d{5})(\d{5})/, '$1-$2');
+                } else {
+                    value = value.replace(/(\d{5})(\d{5})(\d{1,4})/, '$1-$2-$3');
+                }
+            }
+            e.target.value = value;
+        });
+    }
+    
+    // Character counter for message
+    const messageTextarea = contactForm.querySelector('#message');
+    if (messageTextarea) {
+        const charCounter = document.createElement('div');
+        charCounter.className = 'char-counter';
+        charCounter.style.cssText = 'text-align: right; font-size: 12px; color: var(--muted); margin-top: 4px;';
+        messageTextarea.parentNode.appendChild(charCounter);
+        
+        messageTextarea.addEventListener('input', function() {
+            const remaining = 1000 - this.value.length;
+            charCounter.textContent = `${remaining} characters remaining`;
+            charCounter.style.color = remaining < 100 ? '#ef4444' : 'var(--muted)';
+        });
+    }
+}
+
+// Field validation
+function validateField(field) {
+    const value = field.value.trim();
+    const fieldName = field.name;
+    
+    clearFieldError(field);
+    
+    if (field.hasAttribute('required') && !value) {
+        showFieldError(field, `${getFieldLabel(fieldName)} is required`);
+        return false;
+    }
+    
+    if (fieldName === 'email' && value && !isValidEmail(value)) {
+        showFieldError(field, 'Please enter a valid email address');
+        return false;
+    }
+    
+    if (fieldName === 'phone' && value && !isValidPhone(value)) {
+        showFieldError(field, 'Please enter a valid phone number');
+        return false;
+    }
+    
+    if (fieldName === 'message' && value && value.length < 10) {
+        showFieldError(field, 'Message must be at least 10 characters long');
+        return false;
+    }
+    
+    return true;
+}
+
+// Show field error
+function showFieldError(field, message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'field-error';
+    errorDiv.style.cssText = 'color: #ef4444; font-size: 12px; margin-top: 4px; display: flex; align-items: center; gap: 4px;';
+    errorDiv.innerHTML = `<span>⚠️</span>${message}`;
+    
+    field.parentNode.appendChild(errorDiv);
+    field.style.borderColor = '#ef4444';
+}
+
+// Clear field error
+function clearFieldError(field) {
+    const errorDiv = field.parentNode.querySelector('.field-error');
+    if (errorDiv) {
+        errorDiv.remove();
+    }
+    field.style.borderColor = '#e3e8ef';
+}
+
+// Get field label
+function getFieldLabel(fieldName) {
+    const labels = {
+        name: 'Full Name',
+        email: 'Email Address',
+        phone: 'Phone Number',
+        subject: 'Subject',
+        message: 'Message'
+    };
+    return labels[fieldName] || fieldName;
+}
+
+// Email validation
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+// Phone validation
+function isValidPhone(phone) {
+    const phoneRegex = /^[\d\-\s\(\)]+$/;
+    const digitsOnly = phone.replace(/\D/g, '');
+    return phoneRegex.test(phone) && digitsOnly.length >= 10;
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    // Create notification
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 400px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    `;
+    
+    // Set background color based on type
+    const colors = {
+        success: '#10b981',
+        error: '#ef4444',
+        info: 'var(--green)',
+        warning: '#f59e0b'
+    };
+    notification.style.background = colors[type] || colors.info;
+    
+    // Set icon based on type
+    const icons = {
+        success: '✅',
+        error: '❌',
+        info: 'ℹ️',
+        warning: '⚠️'
+    };
+    
+    notification.innerHTML = `
+        <span style="font-size: 20px;">${icons[type] || icons.info}</span>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    }, 5000);
+    
+    // Click to dismiss
+    notification.addEventListener('click', () => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    });
+}
+
 // Initialize all features
 function initAllFeatures() {
     initModernNavigation();
@@ -599,6 +848,7 @@ function initAllFeatures() {
     initPerformanceOptimizations();
     initAccessibility();
     initImageGallery(); // Initialize image gallery
+    initContactForm(); // Initialize contact form
 }
 
 // Wait for DOM to be ready
